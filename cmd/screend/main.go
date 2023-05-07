@@ -1,11 +1,19 @@
-# screend
+//go:generate go run git.rootprojects.org/root/go-gitver/v2
+package main
 
-Exploiting GNU screen to be used like sysdaemons
+import (
+	"fmt"
+	"os"
+)
 
-## Usage
+var (
+	commit  = "0000000"
+	version = "0.0.0-pre0+0000000"
+	date    = "0000-00-00T00:00:00+0000"
+)
 
-```
-Usage: screend [options] [command]
+func usage() {
+	fmt.Printf(`Usage: screend [options] [command]
 
 commands:
   help      show this help
@@ -13,7 +21,7 @@ commands:
   remove    remove a process
   list      list all processes
   ps        list all running processes
-  start     start processes
+  start      start processes
   restart   restart processes
   stop      stop processes
   env       print environment variables
@@ -24,10 +32,10 @@ add:
   screend add [options] [command] [args...]
 
   options:
-        -n, --name     name of the process
-        -d, --dir      directory to start the command in
-        -e, --env      environment variables to set (key=value, multiple allowed)
-        -nr, --no-start  do not start the process after adding
+	-n, --name       name of the process
+	-d, --dir        directory to start the command in
+	-e, --env        environment variables to set (key=value, multiple allowed)
+	-nr, --no-start  do not start the process after adding
 
 remove:
   screend remove [name]
@@ -36,7 +44,7 @@ list:
   screend list [name] [options]
 
   options:
-        --json        output as json
+	--json        output as json
 
   If no name is given, all processes will be listed.
 start:
@@ -68,4 +76,44 @@ set-env:
 
 version:
   screend version
-```
+`)
+}
+
+func printVersion() {
+	fmt.Printf(`screend %s
+commit: %s
+date: %s
+`, version, commit, date)
+}
+
+func main() {
+	if len(os.Args) == 1 {
+		usage()
+		os.Exit(1)
+	}
+	switch os.Args[1] {
+	case "help":
+		usage()
+	case "add":
+		add()
+	case "remove":
+		remove()
+	case "list":
+		list()
+	case "start":
+		start()
+	case "restart":
+		restart()
+	case "stop":
+		stop()
+	case "env":
+		env()
+	case "set-env":
+		setEnv()
+	case "version":
+		printVersion()
+	default:
+		usage()
+		os.Exit(1)
+	}
+}
