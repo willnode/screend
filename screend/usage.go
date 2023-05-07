@@ -21,7 +21,7 @@ add:
 
   options:
 	-n, --name       name of the process
-	-d, --dir        directory to start the command in
+	-d, --dir        directory to start the process with
 	-e, --env        environment variables to set (key=value, multiple allowed)
 	-nr, --no-start  do not start the process after adding
 
