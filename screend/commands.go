@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -56,10 +55,9 @@ func add() {
 					p.Env[splits[0]] = splits[1]
 
 				case "-f", "--force":
-
+					force = true
 				case "-nr", "--no-start":
 					start = false
-					force = true
 				default:
 					log.Fatal("Invalid option: ", v)
 				}
@@ -141,9 +139,10 @@ func list() {
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 10, 1, 1, ' ', 0)
-	fmt.Fprintln(w, "ScreenID\tName\tCommand\tArgs\t")
+	w.Write([]byte("ScreenID\tName\tCommand\tArgs\t\n"))
 	for _, v := range lists {
-		fmt.Fprintln(w, strings.Join([]string{v.ScreenID, v.Name, v.Command, strings.Join(v.Args, " ")}, "\t"))
+		w.Write([]byte(strings.Join([]string{v.ScreenID, v.Name, v.Command, strings.Join(v.Args, " ")}, "\t")))
+		w.Write([]byte("\n"))
 	}
 	w.Flush()
 }
@@ -217,7 +216,7 @@ func env() {
 		log.Fatal("Process not found")
 	}
 	for k, v := range p[0].Env {
-		fmt.Println(k, "=", v)
+		println(k + "=" + v)
 	}
 }
 

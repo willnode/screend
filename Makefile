@@ -1,11 +1,7 @@
 all: build
 
 build:
-	cd cmd/screend \
-		&& go generate \
-		&& go build -o ../../bin/screend \
+	go build -o ./bin ./...
   
 install:
-	cd cmd/screend \
-		&& go generate \
-		&& go install \
+	cd ./screend && go install
