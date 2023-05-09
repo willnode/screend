@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"os"
 	"path/filepath"
@@ -14,7 +15,7 @@ func add() {
 	var p screend.Process
 	args := os.Args[2:]
 	p.Env = make(map[string]string)
-	start := true
+	start := false
 	force := false
 	for _, str := range os.Environ() {
 		splits := strings.SplitN(str, "=", 2)
@@ -29,9 +30,9 @@ func add() {
 		}
 		if p.Command == "" {
 			if strings.HasPrefix(k, "-") {
-				i++
 				switch k {
 				case "-n", "--name":
+					i++
 					if v == "" {
 						log.Fatal("Empty option value: ", k)
 					}
@@ -40,11 +41,13 @@ func add() {
 					}
 					p.Name = v
 				case "-d", "--dir":
+					i++
 					if v == "" {
 						log.Fatal("Empty option value: ", k)
 					}
 					p.Dir = v
 				case "-e", "--env":
+					i++
 					if v == "" {
 						log.Fatal("Empty option value: ", k)
 					}
@@ -52,12 +55,16 @@ func add() {
 					if len(splits) != 2 {
 						log.Fatal("Invalid environment variable: ", v)
 					}
-					p.Env[splits[0]] = splits[1]
+					if splits[1] == "" {
+						delete(p.Env, splits[0])
+					} else {
+						p.Env[splits[0]] = splits[1]
+					}
 
 				case "-f", "--force":
 					force = true
-				case "-nr", "--no-start":
-					start = false
+				case "-s", "--start":
+					start = true
 				default:
 					log.Fatal("Invalid option: ", v)
 				}
@@ -94,8 +101,12 @@ func add() {
 		log.Fatal(err)
 	}
 	if start {
-		err = s.StartProcess(p.Name)
-		if err != nil && !force {
+		if force {
+			err = s.RestartProcess(p.Name)
+		} else {
+			err = s.StartProcess(p.Name)
+		}
+		if err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -125,8 +136,30 @@ func remove() {
 
 func list() {
 	name := ""
-	if len(os.Args) == 3 {
-		name = os.Args[2]
+	format := "table"
+	args := os.Args[2:]
+	i := 0
+	for i < len(args) {
+		k := args[i]
+		v := ""
+		if i+1 < len(args) {
+			v = args[i+1]
+		}
+		i++
+		if strings.HasPrefix(k, "-") {
+			switch k {
+			case "-f", "--format":
+				format = v
+				i++
+			default:
+				log.Fatal("Invalid option: ", v)
+			}
+		} else {
+			if name != "" {
+				log.Fatal("Invalid argument: ", k)
+			}
+			name = k
+		}
 	}
 
 	s, err := screend.InitScreend()
@@ -138,13 +171,43 @@ func list() {
 		log.Fatal(err)
 	}
 
-	w := tabwriter.NewWriter(os.Stdout, 10, 1, 1, ' ', 0)
-	w.Write([]byte("ScreenID\tName\tCommand\tArgs\t\n"))
-	for _, v := range lists {
-		w.Write([]byte(strings.Join([]string{v.ScreenID, v.Name, v.Command, strings.Join(v.Args, " ")}, "\t")))
-		w.Write([]byte("\n"))
+	switch format {
+	case "json":
+		for _, v := range lists {
+			line := struct {
+				ScreenID string   `json:"screen_id"`
+				Name     string   `json:"name"`
+				Command  string   `json:"command"`
+				Args     []string `json:"args"`
+			}{
+				v.ScreenID,
+				v.Name,
+				v.Command,
+				v.Args,
+			}
+
+			str, err := json.Marshal(line)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			println(string(str))
+		}
+	case "table":
+		w := tabwriter.NewWriter(os.Stdout, 10, 1, 1, ' ', 0)
+		w.Write([]byte("ScreenID\tName\tCommand\tArgs\t\n"))
+		for _, v := range lists {
+			args, err := json.Marshal(v.Args)
+			if err != nil {
+				log.Fatal(err)
+			}
+			w.Write([]byte(strings.Join([]string{v.ScreenID, v.Name, v.Command, string(args)}, "\t")))
+			w.Write([]byte("\n"))
+		}
+		w.Flush()
+	default:
+		log.Fatal("Invalid format: ", format)
 	}
-	w.Flush()
 }
 
 func start() {

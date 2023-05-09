@@ -23,7 +23,8 @@ add:
 	-n, --name       name of the process
 	-d, --dir        directory to start the process with
 	-e, --env        environment variables to set (key=value, multiple allowed)
-	-nr, --no-start  do not start the process after adding
+	-f, --force      allow update if process already exists
+	-s, --start      start the process after
 
 remove:
   screend remove [name] [options]
