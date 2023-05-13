@@ -192,7 +192,7 @@ func list() {
 				log.Fatal(err)
 			}
 
-			fmt.Println(str)
+			fmt.Println(string(str))
 		}
 	case "table":
 		w := tabwriter.NewWriter(os.Stdout, 10, 1, 1, ' ', 0)
