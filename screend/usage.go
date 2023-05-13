@@ -1,14 +1,27 @@
 package main
 
+import (
+	"fmt"
+	"os"
+)
+
 func usage() {
-	println(`Usage: screend [options] [command]
+	fmt.Println(usageString())
+}
+
+func usageAndExit() {
+	println(usageString())
+	os.Exit(1)
+}
+
+func usageString() string {
+	return (`Usage: screend [options] [command]
 
 commands:
   help      show this help
   add       add and start a new process
   remove    remove a process
   list      list all processes
-  ps        list all running processes
   start     start processes
   restart   restart processes
   stop      stop processes
@@ -58,8 +71,8 @@ stop:
 env:
   screend env [name]
 
-  If no name is given, all environment variables will be printed.
-
+  Print environment variables to given name process.
+  
 set-env:
   screend set-env [name] [key]=[value]
 

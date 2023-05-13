@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -191,7 +192,7 @@ func list() {
 				log.Fatal(err)
 			}
 
-			println(string(str))
+			fmt.Println(str)
 		}
 	case "table":
 		w := tabwriter.NewWriter(os.Stdout, 10, 1, 1, ' ', 0)
@@ -264,7 +265,6 @@ func env() {
 		name = os.Args[2]
 	} else {
 		log.Fatal("Missing name")
-		usage()
 	}
 
 	s, err := screend.InitScreend()
@@ -279,7 +279,7 @@ func env() {
 		log.Fatal("Process not found")
 	}
 	for k, v := range p[0].Env {
-		println(k + "=" + v)
+		fmt.Println(k + "=" + v)
 	}
 }
 

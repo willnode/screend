@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"runtime/debug"
 )
@@ -37,9 +38,8 @@ func main() {
 	case "set-env":
 		setEnv()
 	case "version", "--version":
-		println(version())
+		fmt.Println(version())
 	default:
-		usage()
-		os.Exit(1)
+		usageAndExit()
 	}
 }
